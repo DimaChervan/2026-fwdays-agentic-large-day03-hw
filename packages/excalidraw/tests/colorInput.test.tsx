@@ -143,6 +143,12 @@ describe("ColorInput component error behavior", () => {
   };
 
   describe("error message display on invalid input", () => {
+    it("does not call onChange for invalid input", () => {
+      const { input, onChange } = renderColorInput();
+      fireEvent.change(input, { target: { value: "zzzzzz" } });
+      expect(onChange).not.toHaveBeenCalled();
+    });
+
     it("shows error for invalid hex characters", () => {
       const { container, input } = renderColorInput();
       fireEvent.change(input, { target: { value: "zzzzzz" } });
