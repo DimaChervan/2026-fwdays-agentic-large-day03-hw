@@ -249,6 +249,10 @@ describe("getColorValidationError", () => {
         expect(getColorValidationError(val)).toBe("Invalid hex color");
       },
     );
+
+    it("hash-only input returns error", () => {
+      expect(getColorValidationError("#")).toBe("Invalid hex color");
+    });
   });
 
   describe("invalid hex lengths", () => {

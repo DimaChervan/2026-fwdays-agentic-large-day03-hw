@@ -23,3 +23,4 @@
 - [x] 4.2 Add tests for error message clearing on valid input and on blur
 - [x] 4.3 Add tests for error styling class toggle
 - [x] 4.4 Run `yarn test:update` and `yarn test:typecheck` to verify all tests pass
+- [x] 4.5 Run `yarn build` to verify production build passes

@@ -331,6 +331,7 @@ export const isColorDark = (color: string, threshold = 160): boolean => {
 // validation
 // -----------------------------------------------------------------------------
 
+// TODO: Move error messages to i18n via `t()` when localization is needed
 const HEX_CHAR_RE = /^[0-9a-fA-F]+$/;
 const VALID_HEX_LENGTHS = new Set([3, 4, 6, 8]);
 

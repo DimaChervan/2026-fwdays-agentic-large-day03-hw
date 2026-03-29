@@ -1,7 +1,14 @@
+import React from "react";
+
 import {
   getColorValidationError,
   normalizeInputColor,
 } from "@excalidraw/common";
+import { render, fireEvent } from "@testing-library/react";
+
+import { EditorJotaiProvider } from "../editor-jotai";
+
+import { ColorInput } from "../components/ColorPicker/ColorInput";
 
 describe("normalizeInputColor", () => {
   describe("hex colors", () => {
@@ -116,99 +123,90 @@ describe("normalizeInputColor", () => {
   });
 });
 
-describe("color input error display logic", () => {
-  // Simulates the changeColor logic from ColorInput component
-  const simulateChangeColor = (inputValue: string) => {
-    const value = inputValue.toLowerCase();
-    const color = normalizeInputColor(value);
-    if (color) {
-      return { accepted: true, errorMessage: null };
-    }
-    return { accepted: false, errorMessage: getColorValidationError(value) };
+describe("ColorInput component error behavior", () => {
+  const renderColorInput = (color = "#ff0000") => {
+    const onChange = vi.fn();
+    const result = render(
+      <EditorJotaiProvider>
+        <ColorInput
+          color={color}
+          onChange={onChange}
+          label="Test color"
+          colorPickerType="elementStroke"
+        />
+      </EditorJotaiProvider>,
+    );
+    const input = result.container.querySelector(
+      ".color-picker-input",
+    ) as HTMLInputElement;
+    return { ...result, input, onChange };
   };
 
   describe("error message display on invalid input", () => {
     it("shows error for invalid hex characters", () => {
-      const result = simulateChangeColor("zzzzzz");
-      expect(result.accepted).toBe(false);
-      expect(result.errorMessage).toBe("Invalid hex color");
+      const { container, input } = renderColorInput();
+      fireEvent.change(input, { target: { value: "zzzzzz" } });
+      const error = container.querySelector(".color-picker__input-error");
+      expect(error?.textContent).toBe("Invalid hex color");
     });
 
     it("shows error for invalid hex length", () => {
-      const result = simulateChangeColor("abcde");
-      expect(result.accepted).toBe(false);
-      expect(result.errorMessage).toBe(
-        "Hex must be 3, 4, 6, or 8 characters",
-      );
+      const { container, input } = renderColorInput();
+      fireEvent.change(input, { target: { value: "abcde" } });
+      const error = container.querySelector(".color-picker__input-error");
+      expect(error?.textContent).toBe("Hex must be 3, 4, 6, or 8 characters");
     });
 
     it("shows error for hex exceeding max length", () => {
-      const result = simulateChangeColor("abcdef012");
-      expect(result.accepted).toBe(false);
-      expect(result.errorMessage).toBe(
-        "Hex must be 3, 4, 6, or 8 characters",
-      );
-    });
-
-    it("shows error for partial hex input (2 chars)", () => {
-      const result = simulateChangeColor("ab");
-      expect(result.accepted).toBe(false);
-      expect(result.errorMessage).toBe(
-        "Hex must be 3, 4, 6, or 8 characters",
-      );
+      const { container, input } = renderColorInput();
+      fireEvent.change(input, { target: { value: "abcdef012" } });
+      const error = container.querySelector(".color-picker__input-error");
+      expect(error?.textContent).toBe("Hex must be 3, 4, 6, or 8 characters");
     });
   });
 
-  describe("error message clearing on valid input", () => {
+  describe("error message clearing", () => {
     it("clears error when valid hex is entered", () => {
-      // First invalid
-      const invalid = simulateChangeColor("zz");
-      expect(invalid.errorMessage).not.toBeNull();
+      const { container, input } = renderColorInput();
+      fireEvent.change(input, { target: { value: "zzzzzz" } });
+      expect(
+        container.querySelector(".color-picker__input-error"),
+      ).not.toBeNull();
 
-      // Then valid
-      const valid = simulateChangeColor("ff0000");
-      expect(valid.accepted).toBe(true);
-      expect(valid.errorMessage).toBeNull();
+      fireEvent.change(input, { target: { value: "ff0000" } });
+      expect(
+        container.querySelector(".color-picker__input-error"),
+      ).toBeNull();
     });
 
-    it("clears error when valid named color is entered", () => {
-      const invalid = simulateChangeColor("zz");
-      expect(invalid.errorMessage).not.toBeNull();
+    it("clears error on blur", () => {
+      const { container, input } = renderColorInput();
+      fireEvent.change(input, { target: { value: "zzzzzz" } });
+      expect(
+        container.querySelector(".color-picker__input-error"),
+      ).not.toBeNull();
 
-      const valid = simulateChangeColor("red");
-      expect(valid.accepted).toBe(true);
-      expect(valid.errorMessage).toBeNull();
-    });
-  });
-
-  describe("error message clearing on blur", () => {
-    it("blur resets to last valid color and clears error", () => {
-      // Simulating blur: error should be cleared (set to null),
-      // and innerValue should revert to last valid color
-      const lastValidColor = "#ff0000";
-      const invalid = simulateChangeColor("zz");
-      expect(invalid.errorMessage).not.toBeNull();
-
-      // On blur, component sets errorMessage to null and innerValue to color
-      const errorAfterBlur = null;
-      const valueAfterBlur = lastValidColor;
-      expect(errorAfterBlur).toBeNull();
-      expect(valueAfterBlur).toBe(lastValidColor);
+      fireEvent.blur(input);
+      expect(
+        container.querySelector(".color-picker__input-error"),
+      ).toBeNull();
     });
   });
 
   describe("error styling class toggle", () => {
-    it("error class should be applied when errorMessage is set", () => {
-      const { errorMessage } = simulateChangeColor("zzzzzz");
-      // The component applies "error" class when errorMessage is truthy
-      const hasErrorClass = !!errorMessage;
-      expect(hasErrorClass).toBe(true);
+    it("adds error class on invalid input", () => {
+      const { container, input } = renderColorInput();
+      fireEvent.change(input, { target: { value: "zzzzzz" } });
+      const label = container.querySelector(".color-picker__input-label");
+      expect(label?.classList.contains("error")).toBe(true);
     });
 
-    it("error class should not be applied when input is valid", () => {
-      const { errorMessage } = simulateChangeColor("ff0000");
-      const hasErrorClass = !!errorMessage;
-      expect(hasErrorClass).toBe(false);
+    it("removes error class on valid input", () => {
+      const { container, input } = renderColorInput();
+      fireEvent.change(input, { target: { value: "zzzzzz" } });
+      fireEvent.change(input, { target: { value: "ff0000" } });
+      const label = container.querySelector(".color-picker__input-label");
+      expect(label?.classList.contains("error")).toBe(false);
     });
   });
 });

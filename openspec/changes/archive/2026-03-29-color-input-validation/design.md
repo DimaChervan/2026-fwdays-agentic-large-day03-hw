@@ -1,3 +1,5 @@
+# Design: Color Input Validation
+
 ## Context
 
 The `ColorInput` component (`packages/excalidraw/components/ColorPicker/ColorInput.tsx`) uses `normalizeInputColor()` from `@excalidraw/common` to validate hex input. Currently, when validation fails (returns `null`), the `onChange` callback is simply not called, and the input reverts to the last valid color on blur. No error feedback is shown to the user.
