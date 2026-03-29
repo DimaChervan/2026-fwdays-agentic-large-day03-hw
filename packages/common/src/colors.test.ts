@@ -1,6 +1,7 @@
 import {
   applyDarkModeFilter,
   COLOR_PALETTE,
+  getColorValidationError,
   rgbToHex,
 } from "@excalidraw/common";
 
@@ -212,6 +213,53 @@ describe("applyDarkModeFilter", () => {
       const result2 = applyDarkModeFilter("#ff0000");
       expect(result1).toBe(result2);
     });
+  });
+});
+
+describe("getColorValidationError", () => {
+  describe("valid inputs return null", () => {
+    it.each(["abc", "aabb00", "aabb00cc", "abcd"])(
+      "valid hex: %s",
+      (hex) => {
+        expect(getColorValidationError(hex)).toBeNull();
+        expect(getColorValidationError(`#${hex}`)).toBeNull();
+      },
+    );
+
+    it.each(["red", "blue", "transparent", "cornflowerblue"])(
+      "valid named color: %s",
+      (name) => {
+        expect(getColorValidationError(name)).toBeNull();
+      },
+    );
+
+    it("empty string returns null", () => {
+      expect(getColorValidationError("")).toBeNull();
+    });
+
+    it("whitespace-only returns null", () => {
+      expect(getColorValidationError("   ")).toBeNull();
+    });
+  });
+
+  describe("invalid characters", () => {
+    it.each(["zzzzzz", "gghhii", "xyz", "12345g"])(
+      "non-hex chars: %s",
+      (val) => {
+        expect(getColorValidationError(val)).toBe("Invalid hex color");
+      },
+    );
+  });
+
+  describe("invalid hex lengths", () => {
+    it.each(["a", "ab", "abcde", "abcdef0", "abcdef012"])(
+      "invalid length: %s",
+      (val) => {
+        expect(getColorValidationError(val)).toBe(
+          "Hex must be 3, 4, 6, or 8 characters",
+        );
+      },
+    );
   });
 });
 

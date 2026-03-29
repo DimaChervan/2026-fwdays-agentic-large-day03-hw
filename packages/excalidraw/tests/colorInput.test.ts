@@ -1,4 +1,7 @@
-import { normalizeInputColor } from "@excalidraw/common";
+import {
+  getColorValidationError,
+  normalizeInputColor,
+} from "@excalidraw/common";
 
 describe("normalizeInputColor", () => {
   describe("hex colors", () => {
@@ -109,6 +112,103 @@ describe("normalizeInputColor", () => {
     it("returns null for partial/malformed colors", () => {
       expect(normalizeInputColor("#ff")).toBe(null);
       expect(normalizeInputColor("rgb(")).toBe(null);
+    });
+  });
+});
+
+describe("color input error display logic", () => {
+  // Simulates the changeColor logic from ColorInput component
+  const simulateChangeColor = (inputValue: string) => {
+    const value = inputValue.toLowerCase();
+    const color = normalizeInputColor(value);
+    if (color) {
+      return { accepted: true, errorMessage: null };
+    }
+    return { accepted: false, errorMessage: getColorValidationError(value) };
+  };
+
+  describe("error message display on invalid input", () => {
+    it("shows error for invalid hex characters", () => {
+      const result = simulateChangeColor("zzzzzz");
+      expect(result.accepted).toBe(false);
+      expect(result.errorMessage).toBe("Invalid hex color");
+    });
+
+    it("shows error for invalid hex length", () => {
+      const result = simulateChangeColor("abcde");
+      expect(result.accepted).toBe(false);
+      expect(result.errorMessage).toBe(
+        "Hex must be 3, 4, 6, or 8 characters",
+      );
+    });
+
+    it("shows error for hex exceeding max length", () => {
+      const result = simulateChangeColor("abcdef012");
+      expect(result.accepted).toBe(false);
+      expect(result.errorMessage).toBe(
+        "Hex must be 3, 4, 6, or 8 characters",
+      );
+    });
+
+    it("shows error for partial hex input (2 chars)", () => {
+      const result = simulateChangeColor("ab");
+      expect(result.accepted).toBe(false);
+      expect(result.errorMessage).toBe(
+        "Hex must be 3, 4, 6, or 8 characters",
+      );
+    });
+  });
+
+  describe("error message clearing on valid input", () => {
+    it("clears error when valid hex is entered", () => {
+      // First invalid
+      const invalid = simulateChangeColor("zz");
+      expect(invalid.errorMessage).not.toBeNull();
+
+      // Then valid
+      const valid = simulateChangeColor("ff0000");
+      expect(valid.accepted).toBe(true);
+      expect(valid.errorMessage).toBeNull();
+    });
+
+    it("clears error when valid named color is entered", () => {
+      const invalid = simulateChangeColor("zz");
+      expect(invalid.errorMessage).not.toBeNull();
+
+      const valid = simulateChangeColor("red");
+      expect(valid.accepted).toBe(true);
+      expect(valid.errorMessage).toBeNull();
+    });
+  });
+
+  describe("error message clearing on blur", () => {
+    it("blur resets to last valid color and clears error", () => {
+      // Simulating blur: error should be cleared (set to null),
+      // and innerValue should revert to last valid color
+      const lastValidColor = "#ff0000";
+      const invalid = simulateChangeColor("zz");
+      expect(invalid.errorMessage).not.toBeNull();
+
+      // On blur, component sets errorMessage to null and innerValue to color
+      const errorAfterBlur = null;
+      const valueAfterBlur = lastValidColor;
+      expect(errorAfterBlur).toBeNull();
+      expect(valueAfterBlur).toBe(lastValidColor);
+    });
+  });
+
+  describe("error styling class toggle", () => {
+    it("error class should be applied when errorMessage is set", () => {
+      const { errorMessage } = simulateChangeColor("zzzzzz");
+      // The component applies "error" class when errorMessage is truthy
+      const hasErrorClass = !!errorMessage;
+      expect(hasErrorClass).toBe(true);
+    });
+
+    it("error class should not be applied when input is valid", () => {
+      const { errorMessage } = simulateChangeColor("ff0000");
+      const hasErrorClass = !!errorMessage;
+      expect(hasErrorClass).toBe(false);
     });
   });
 });

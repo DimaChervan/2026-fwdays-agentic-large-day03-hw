@@ -328,6 +328,49 @@ export const isColorDark = (color: string, threshold = 160): boolean => {
 };
 
 // -----------------------------------------------------------------------------
+// validation
+// -----------------------------------------------------------------------------
+
+const HEX_CHAR_RE = /^[0-9a-fA-F]+$/;
+const VALID_HEX_LENGTHS = new Set([3, 4, 6, 8]);
+
+/**
+ * Returns a specific error message for an invalid color input, or `null` if valid.
+ */
+export const getColorValidationError = (value: string): string | null => {
+  value = value.trim();
+
+  if (!value) {
+    return null;
+  }
+
+  // Check if it's a valid named/CSS color via tinycolor
+  const tc = tinycolor(value);
+  if (tc.isValid()) {
+    return null;
+  }
+
+  // Strip leading # for hex analysis
+  const hex = value.startsWith("#") ? value.slice(1) : value;
+
+  if (!hex.length) {
+    return "Invalid hex color";
+  }
+
+  // Check for invalid hex characters
+  if (!HEX_CHAR_RE.test(hex)) {
+    return "Invalid hex color";
+  }
+
+  // Valid hex chars but wrong length
+  if (!VALID_HEX_LENGTHS.has(hex.length)) {
+    return "Hex must be 3, 4, 6, or 8 characters";
+  }
+
+  return "Invalid hex color";
+};
+
+// -----------------------------------------------------------------------------
 // normalization
 // -----------------------------------------------------------------------------
 
