@@ -246,12 +246,12 @@ describe("getColorValidationError", () => {
     it.each(["zzzzzz", "gghhii", "xyz", "12345g"])(
       "non-hex chars: %s",
       (val) => {
-        expect(getColorValidationError(val)).toBe("Invalid hex color");
+        expect(getColorValidationError(val)).toBe("invalidHexColor");
       },
     );
 
     it("hash-only input returns error", () => {
-      expect(getColorValidationError("#")).toBe("Invalid hex color");
+      expect(getColorValidationError("#")).toBe("invalidHexColor");
     });
   });
 
@@ -259,9 +259,7 @@ describe("getColorValidationError", () => {
     it.each(["a", "ab", "abcde", "abcdef0", "abcdef012"])(
       "invalid length: %s",
       (val) => {
-        expect(getColorValidationError(val)).toBe(
-          "Hex must be 3, 4, 6, or 8 characters",
-        );
+        expect(getColorValidationError(val)).toBe("invalidHexLength");
       },
     );
   });

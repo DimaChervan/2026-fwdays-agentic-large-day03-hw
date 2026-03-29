@@ -7,6 +7,8 @@ import {
   normalizeInputColor,
 } from "@excalidraw/common";
 
+import type { ColorValidationError } from "@excalidraw/common";
+
 import { getShortcutKey } from "../..//shortcut";
 import { useAtom } from "../../editor-jotai";
 import { t } from "../../i18n";
@@ -17,6 +19,12 @@ import { eyeDropperIcon } from "../icons";
 import { activeColorPickerSectionAtom } from "./colorPickerUtils";
 
 import type { ColorPickerType } from "./colorPickerUtils";
+import type { TranslationKeys } from "../../i18n";
+
+const COLOR_VALIDATION_I18N: Record<ColorValidationError, TranslationKeys> = {
+  invalidHexColor: "colorPicker.invalidHexColor",
+  invalidHexLength: "colorPicker.invalidHexLength",
+};
 
 export const ColorInput = ({
   color,
@@ -33,7 +41,7 @@ export const ColorInput = ({
 }) => {
   const editorInterface = useEditorInterface();
   const [innerValue, setInnerValue] = useState(color);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorKey, setErrorKey] = useState<string | null>(null);
   const [activeSection, setActiveColorPickerSection] = useAtom(
     activeColorPickerSectionAtom,
   );
@@ -49,9 +57,9 @@ export const ColorInput = ({
 
       if (color) {
         onChange(color);
-        setErrorMessage(null);
+        setErrorKey(null);
       } else {
-        setErrorMessage(getColorValidationError(value));
+        setErrorKey(getColorValidationError(value));
       }
       setInnerValue(value);
     },
@@ -79,7 +87,7 @@ export const ColorInput = ({
     <div className="color-picker__input-wrapper">
       <div
         className={clsx("color-picker__input-label", {
-          error: errorMessage,
+          error: errorKey,
         })}
       >
         <div className="color-picker__input-hash">#</div>
@@ -95,7 +103,7 @@ export const ColorInput = ({
           value={(innerValue || "").replace(/^#/, "")}
           onBlur={() => {
             setInnerValue(color);
-            setErrorMessage(null);
+            setErrorKey(null);
           }}
           tabIndex={-1}
           onFocus={() => setActiveColorPickerSection("hex")}
@@ -144,8 +152,10 @@ export const ColorInput = ({
           </>
         )}
       </div>
-      {errorMessage && (
-        <div className="color-picker__input-error">{errorMessage}</div>
+      {errorKey && (
+        <div className="color-picker__input-error">
+          {t(COLOR_VALIDATION_I18N[errorKey as ColorValidationError])}
+        </div>
       )}
     </div>
   );

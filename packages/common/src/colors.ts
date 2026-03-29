@@ -331,14 +331,18 @@ export const isColorDark = (color: string, threshold = 160): boolean => {
 // validation
 // -----------------------------------------------------------------------------
 
-// TODO: Move error messages to i18n via `t()` when localization is needed
 const HEX_CHAR_RE = /^[0-9a-fA-F]+$/;
 const VALID_HEX_LENGTHS = new Set([3, 4, 6, 8]);
 
+export type ColorValidationError = "invalidHexColor" | "invalidHexLength";
+
 /**
- * Returns a specific error message for an invalid color input, or `null` if valid.
+ * Returns a validation error key for an invalid color input, or `null` if valid.
+ * Use the key to look up the localized message via `t()`.
  */
-export const getColorValidationError = (value: string): string | null => {
+export const getColorValidationError = (
+  value: string,
+): ColorValidationError | null => {
   value = value.trim();
 
   if (!value) {
@@ -355,17 +359,17 @@ export const getColorValidationError = (value: string): string | null => {
   const hex = value.startsWith("#") ? value.slice(1) : value;
 
   if (!hex.length) {
-    return "Invalid hex color";
+    return "invalidHexColor";
   }
 
   // Check for invalid hex characters
   if (!HEX_CHAR_RE.test(hex)) {
-    return "Invalid hex color";
+    return "invalidHexColor";
   }
 
   // Valid hex chars but wrong length
   if (!VALID_HEX_LENGTHS.has(hex.length)) {
-    return "Hex must be 3, 4, 6, or 8 characters";
+    return "invalidHexLength";
   }
 
   // Valid hex chars + valid length → tinycolor would have accepted it above
