@@ -179,6 +179,19 @@ describe("ColorInput component error behavior", () => {
       ).toBeNull();
     });
 
+    it("clears error when valid named color is entered", () => {
+      const { container, input } = renderColorInput();
+      fireEvent.change(input, { target: { value: "zzzzzz" } });
+      expect(
+        container.querySelector(".color-picker__input-error"),
+      ).not.toBeNull();
+
+      fireEvent.change(input, { target: { value: "red" } });
+      expect(
+        container.querySelector(".color-picker__input-error"),
+      ).toBeNull();
+    });
+
     it("clears error on blur", () => {
       const { container, input } = renderColorInput();
       fireEvent.change(input, { target: { value: "zzzzzz" } });

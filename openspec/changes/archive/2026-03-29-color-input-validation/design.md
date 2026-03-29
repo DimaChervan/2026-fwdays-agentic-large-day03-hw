@@ -15,6 +15,7 @@ The component renders inside a flex container (`color-picker__input-label`) with
 - Add visual error styling (red border) to the input container
 
 **Non-Goals:**
+
 - Changing the existing validation logic or supported color formats
 - Adding validation to the eye dropper or preset color buttons
 - Supporting real-time color preview for partially valid input

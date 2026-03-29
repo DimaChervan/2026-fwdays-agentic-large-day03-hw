@@ -368,7 +368,8 @@ export const getColorValidationError = (value: string): string | null => {
     return "Hex must be 3, 4, 6, or 8 characters";
   }
 
-  return "Invalid hex color";
+  // Valid hex chars + valid length → tinycolor would have accepted it above
+  return null;
 };
 
 // -----------------------------------------------------------------------------
