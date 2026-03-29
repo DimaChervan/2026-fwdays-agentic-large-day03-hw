@@ -41,7 +41,7 @@ export const ColorInput = ({
 }) => {
   const editorInterface = useEditorInterface();
   const [innerValue, setInnerValue] = useState(color);
-  const [errorKey, setErrorKey] = useState<string | null>(null);
+  const [errorKey, setErrorKey] = useState<ColorValidationError | null>(null);
   const [activeSection, setActiveColorPickerSection] = useAtom(
     activeColorPickerSectionAtom,
   );
@@ -154,7 +154,7 @@ export const ColorInput = ({
       </div>
       {errorKey && (
         <div className="color-picker__input-error">
-          {t(COLOR_VALIDATION_I18N[errorKey as ColorValidationError])}
+          {t(COLOR_VALIDATION_I18N[errorKey])}
         </div>
       )}
     </div>
